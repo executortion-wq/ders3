@@ -1,4 +1,4 @@
 flask
-psycop2-binary
+psycopg2-binary
 gunicorn
 flask-cors
