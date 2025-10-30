@@ -14,7 +14,7 @@ DATABASE_URL = os.getenv(
 
 "DATABASE_URL",
 
-"postgresql://volkan:201eAcwsVd7cf1jyxQL2F1wn4VZ3FSbW@dpg-d3t90iur433s73b5q070-a.oregon-postgres.render.com/cloud_db_gwjr"
+"postgresql://burhan:tWnM75JYoQU4O0604xomkQhk4S1VCYRJ@dpg-d3tjfk3e5dus73912vg0-a.oregon-postgres.render.com/ders1_db"
 
 )
 
