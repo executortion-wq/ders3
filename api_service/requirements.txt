@@ -1,1 +1,4 @@
-
+flask
+psycop2-binary
+gunicorn
+flask-cors
