@@ -4,7 +4,7 @@ import requests
 app = Flask(__name__)
 
 # Backend API URL (ders3 projesi Render linki)
-API_URL = "https://ders3.onrender.com/ziyaretciler"
+API_URL = "https://ders3.onrender.com"
 
 HTML = """
 <!doctype html>
