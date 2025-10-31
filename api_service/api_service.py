@@ -19,34 +19,37 @@ def ziyaretciler():
         conn = connect_db()
         cur = conn.cursor()
 
-        # Tabloyu bir kere oluştur (idempotent)
+        # Tabloyu oluştur (idempotent)
         cur.execute("""
             CREATE TABLE IF NOT EXISTS ziyaretciler (
                 id SERIAL PRIMARY KEY,
-                isim TEXT
+                isim TEXT,
+                sehir TEXT
             )
         """)
 
-        # POST isteğiyle gelen isim varsa ekle
+        # POST isteği ile veri ekle
         if request.method == "POST":
-            isim = request.json.get("isim")
-            if isim:
-                cur.execute("INSERT INTO ziyaretciler (isim) VALUES (%s)", (isim,))
+            data = request.get_json()
+            isim = data.get("isim")
+            sehir = data.get("sehir")
+            if isim and sehir:
+                cur.execute("INSERT INTO ziyaretciler (isim, sehir) VALUES (%s, %s)", (isim, sehir))
                 conn.commit()
 
-        # Son 10 kişiyi getir
-        cur.execute("SELECT isim FROM ziyaretciler ORDER BY id DESC LIMIT 10")
-        isimler = [row[0] for row in cur.fetchall()]
+        # Son 10 kaydı getir
+        cur.execute("SELECT isim, sehir FROM ziyaretciler ORDER BY id DESC LIMIT 10")
+        kayitlar = [f"{row[0]} - {row[1]}" for row in cur.fetchall()]
 
         cur.close()
         conn.close()
 
-        return jsonify(isimler)
-    
+        return jsonify(kayitlar)
+
     except Exception as e:
         print("Veritabanı hatası:", e)
         return jsonify({"hata": str(e)}), 500
 
-
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5001)
+    port = int(os.environ.get("PORT", 5000))  # Render için dinamik port
+    app.run(host="0.0.0.0", port=port)
