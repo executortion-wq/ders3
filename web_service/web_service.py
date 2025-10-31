@@ -63,15 +63,15 @@ HTML = """
 """
 
 @app.route("/", methods=["GET", "POST"])
-def index():
-    if request.method == "POST":
-        isim = request.form.get("isim")
-        sehir = request.form.get("sehir")
-        try:
-            requests.post(API_URL, json={"isim": isim, "sehir": sehir})
-        except Exception as e:
-            print("POST isteğinde hata:", e)
-        return redirect("/")
+if request.method == "POST":
+    isim = request.form.get("isim")
+    sehir = request.form.get("sehir")
+    try:
+        r = requests.post(API_URL, json={"isim": isim, "sehir": sehir})
+        print("POST status:", r.status_code, r.text)  # <- burası debug
+    except Exception as e:
+        print("POST isteğinde hata:", e)
+    return redirect("/")
 
     try:
         resp = requests.get(API_URL)
