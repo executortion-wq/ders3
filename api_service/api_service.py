@@ -1,64 +1,52 @@
 from flask import Flask, request, jsonify
-
 from flask_cors import CORS
-
 import psycopg2, os
 
-
 app = Flask(__name__)
-
 CORS(app)
 
-
 DATABASE_URL = os.getenv(
-
-"DATABASE_URL",
-
-"postgresql://burhan:tWnM75JYoQU4O0604xomkQhk4S1VCYRJ@dpg-d3tjfk3e5dus73912vg0-a.oregon-postgres.render.com/ders1_db"
-
+    "DATABASE_URL",
+    "postgresql://burhan:tWnM75JYoQU4O0604xomkQhk4S1VCYRJ@dpg-d3tjfk3e5dus73912vg0-a.oregon-postgres.render.com/ders1_db"
 )
 
-
 def connect_db():
-
-return psycopg2.connect(DATABASE_URL)
-
+    return psycopg2.connect(DATABASE_URL)
 
 @app.route("/ziyaretciler", methods=["GET", "POST"])
-
 def ziyaretciler():
+    try:
+        conn = connect_db()
+        cur = conn.cursor()
 
-conn = connect_db()
+        # Tabloyu bir kere oluştur (idempotent)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS ziyaretciler (
+                id SERIAL PRIMARY KEY,
+                isim TEXT
+            )
+        """)
 
-cur = conn.cursor()
+        # POST isteğiyle gelen isim varsa ekle
+        if request.method == "POST":
+            isim = request.json.get("isim")
+            if isim:
+                cur.execute("INSERT INTO ziyaretciler (isim) VALUES (%s)", (isim,))
+                conn.commit()
 
-cur.execute("CREATE TABLE IF NOT EXISTS ziyaretciler (id SERIAL PRIMARY KEY, isim TEXT)")
+        # Son 10 kişiyi getir
+        cur.execute("SELECT isim FROM ziyaretciler ORDER BY id DESC LIMIT 10")
+        isimler = [row[0] for row in cur.fetchall()]
 
+        cur.close()
+        conn.close()
 
-if request.method == "POST":
-
-isim = request.json.get("isim")
-
-if isim:
-
-cur.execute("INSERT INTO ziyaretciler (isim) VALUES (%s)", (isim,))
-
-conn.commit()
-
-
-cur.execute("SELECT isim FROM ziyaretciler ORDER BY id DESC LIMIT 10")
-
-isimler = [row[0] for row in cur.fetchall()]
-
-
-cur.close()
-
-conn.close()
-
-
-return jsonify(isimler)
+        return jsonify(isimler)
+    
+    except Exception as e:
+        print("Veritabanı hatası:", e)
+        return jsonify({"hata": str(e)}), 500
 
 
 if __name__ == "__main__":
-
-app.run(host="0.0.0.0", port=5001)
+    app.run(host="0.0.0.0", port=5001)
